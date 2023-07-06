@@ -9,7 +9,7 @@ app.set("view engine", "ejs");
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "Http://www.google.com"
+  "9sm5xK": "http://www.google.com"
 };
 
 app.use(express.urlencoded({ extended: true}));
@@ -42,7 +42,10 @@ app.get("/hello", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  let long = req.body['longURL'];
+  let short = generateRandomString();
+  urlDatabase[short] = long;
+  res.redirect(`/urls/${short}`);
 })
 
 app.listen(PORT, () => {

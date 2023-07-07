@@ -1,12 +1,11 @@
 const express = require("express");
 const cookieParser = require("cookie-parser")
-
 const app = express();
-app.use(cookieParser());
 const PORT = 8080; // default port 8080
 
-const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-const shortURLIDLength = 6;
+const { generateRandomString, getUserByEmail } = require("./helper_functions")
+
+app.use(cookieParser());
 
 app.set("view engine", "ejs");
 
@@ -111,14 +110,20 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const userID = generateRandomString();
 
-  users[userID] = {
-    id: userID,
-    email,
-    password
-  };
-
-  res.cookie("user_id", userID);
-  res.redirect("/urls");
+  if (!email || !password) {
+    res.status(400).send("Invalid email or password");
+  } else if (getUserByEmail(email, users)) {
+    res.status(400).send("Email address already in use. Please enter another email")
+  } else {
+    users[userID] = {
+      id: userID,
+      email,
+      password
+    };
+  
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+  }
 })
 
 app.post("/login", (req, res) => {
@@ -137,11 +142,3 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`)
 });
 
-function generateRandomString() {
-  let result = '';
-  const charactersLength = characters.length;
-  for (let i = 0; i < shortURLIDLength; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}

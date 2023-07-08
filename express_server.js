@@ -124,9 +124,10 @@ app.post("/register", (req, res) => {
   } else {
     users[userID] = {
       id: userID,
-      email,
-      password
+      email: email,
+      password: password
     };
+    console.log(users[userID].password);
   
     res.cookie("user_id", userID);
     res.redirect("/urls");
@@ -134,15 +135,24 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const username = req.body.username;
+  const email = req.body.email;
+  const password = req.body.password;
+  const userID = getUserByEmail(email, users);
 
-  res.cookie('username',username);
-  res.redirect('/urls');
+  if (userID === null) {
+    res.status(403).send("This email is not registered with us, please register or enter a valid email");
+  } else if (password !== users[userID].password) {
+    res.status(403).send("The password you have entered is incorrect");
+  } else {
+    res.cookie('user_id', userID);
+    res.redirect('/urls');
+  }
+
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 app.listen(PORT, () => {

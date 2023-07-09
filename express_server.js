@@ -131,8 +131,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     const shortURL = req.params.shortURL;
     delete urlDatabase[shortURL];
     res.redirect("/urls");
+  } else if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).send("The short URL you put in does not have a long URL to match");
+  } else if (!req.cookies.user_id) {
+    res.status(401).send("Please login before editing URLs")
   } else {
-    res.status(401).send("You do not have the necessary permissions to delete this URL")
+    res.status(401).send("You do not have the necessary permissions to edit this URL");
   }
 });
 
@@ -144,8 +148,12 @@ app.post("/urls/:shortURL", (req, res) => {
     const shortURL = req.params.shortURL;
     urlDatabase[shortURL].longURL = req.body.newURL;
     res.redirect("/urls");
+  } else if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).send("The short URL you put in does not have a long URL to match");
+  } else if (!req.cookies.user_id) {
+    res.status(401).send("Please login before editing URLs")
   } else {
-    res.status(401).send("You do not have the necessary permissions to edit this URL")
+    res.status(401).send("You do not have the necessary permissions to edit this URL");
   }
 });
 

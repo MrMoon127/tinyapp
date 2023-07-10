@@ -14,72 +14,68 @@ app.use(cookieSession({
 
 app.set("view engine", "ejs");
 
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "1"
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "2"
-  }
-};
+const users = {};
 
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
+const urlDatabase = {};
 
 app.use(express.urlencoded({ extended: true}));
 
+// the basis, directs to a login page or users urls
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
+
+// displays urls
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.session.user_id],
     urls: urlsForUser(req.session.user_id, urlDatabase)
   };
-  if (!templateVars.user) {
-    res.send("Please login before accessing URLs")
-  }
   res.render("urls_index", templateVars);
 });
 
+// page to create new urls
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
     res.redirect("/login");
   } else {
     let templateVars = {
       user: users[req.session.user_id]
-    }
+    };
     res.render("urls_new", templateVars);
   }
 });
 
+// page to register a new email
 app.get("/register", (req, res) => {
-  let templateVars = {
-    user: users[req.session.user_id]
-  };
-  res.render("urls_registration", templateVars);
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      user: users[req.session.user_id]
+    };
+    res.render("urls_registration", templateVars);
+  }
 });
 
+// page to login
 app.get("/login", (req, res) => {
-  let templateVars = {
-    user: users[req.session.user_id]
-  };
-  res.render("urls_login", templateVars);
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      user: users[req.session.user_id]
+    };
+    res.render("urls_login", templateVars);
+  }
 });
 
+// shows the editing page for the shortURL given
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     let templateVars = {
@@ -94,6 +90,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
+// directs to the website based off of the short URL given
 app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     const longURL = urlDatabase[req.params.shortURL].longURL;
@@ -111,10 +108,7 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+// redirects to the URL clicked on
 app.post("/urls", (req, res) => {
   if (req.session.user_id) {
     const shortURL = generateRandomString();
@@ -128,6 +122,7 @@ app.post("/urls", (req, res) => {
   }
 });
 
+// deletes the short url clicked on
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
   const userUrls = urlsForUser(userID, urlDatabase);
@@ -139,12 +134,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   } else if (!urlDatabase[req.params.shortURL]) {
     res.status(404).send("The short URL you put in does not have a long URL to match");
   } else if (!req.session.user_id) {
-    res.status(401).send("Please login before editing URLs")
+    res.status(401).send("Please login before editing URLs");
   } else {
     res.status(401).send("You do not have the necessary permissions to edit this URL");
   }
 });
 
+// changes the associated longURL of a shortURL
 app.post("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const userUrls = urlsForUser(userID, urlDatabase);
@@ -156,12 +152,13 @@ app.post("/urls/:shortURL", (req, res) => {
   } else if (!urlDatabase[req.params.shortURL]) {
     res.status(404).send("The short URL you put in does not have a long URL to match");
   } else if (!req.session.user_id) {
-    res.status(401).send("Please login before editing URLs")
+    res.status(401).send("Please login before editing URLs");
   } else {
     res.status(401).send("You do not have the necessary permissions to edit this URL");
   }
 });
 
+// adds the email and password to the userDatabase
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -183,6 +180,7 @@ app.post("/register", (req, res) => {
   }
 });
 
+// determines validity of login info, then redirects to /urls
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -199,6 +197,7 @@ app.post("/login", (req, res) => {
 
 });
 
+// logs user out and clears cookie
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect('/login');

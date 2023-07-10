@@ -30,21 +30,27 @@
           </tr>
         </thead>
         <tbody>
-          <% for (let shortURL in urls) { %>
-            <tr>
-              <td><%= shortURL %></td>
-              <td><%= urls[shortURL].longURL %></td>
-              <td>
-                <a href="urls/<%= shortURL %>">
-                  <button type="submit" class="btn btn-outline-primary">Edit</button>
-                </a>
-              </td>
-              <td>
-                <form method="POST" action="/urls/<%= shortURL %>/delete">
-                  <button type="submit" class="btn btn-outline-danger">Delete</button>
-                </form>
-              </td>
-            </tr>
+          <% if (!user) { %>
+            <div class="alert alert-warning" role="alert">
+              Please <a href="/login" class="alert-link">login</a> before accessing URLs.
+            </div>
+          <% } else { %>
+            <% for (let shortURL in urls) { %>
+              <tr>
+                <td><%= shortURL %></td>
+                <td><%= urls[shortURL].longURL %></td>
+                <td>
+                  <a href="urls/<%= shortURL %>">
+                    <button type="submit" class="btn btn-outline-primary">Edit</button>
+                  </a>
+                </td>
+                <td>
+                  <form method="POST" action="/urls/<%= shortURL %>/delete">
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% } %>
           <% } %>
         </tbody>
       </table>

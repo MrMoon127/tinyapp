@@ -34,10 +34,8 @@ const urlsForUser = function(id, urlDatabase) {
 
 const cookieInUse = function(user_id, userDatabase) {
   for (const user in userDatabase) {
-    if (cookie === user) {
-      if (user_id === user) {
-        return true;
-      }
+    if (user_id === user) {
+      return true;
     }
   }
   return false;

@@ -41,7 +41,7 @@ app.get("/urls", (req, res) => {
 
 // page to create new urls
 app.get("/urls/new", (req, res) => {
-  if (!cookieInUse(req.session.user_id)) {
+  if (!cookieInUse(req.session.user_id, users)) {
     res.redirect("/login");
   } else {
     let templateVars = {

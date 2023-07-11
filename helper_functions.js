@@ -41,9 +41,22 @@ const cookieInUse = function(user_id, userDatabase) {
   return false;
 }
 
+function isValidURL(string) {
+  let url;
+  
+  try {
+    url = new URL(string);
+  } catch (e) {
+    return false;  
+  }
+
+  return url.protocol === "http:" || url.protocol === "https:";
+}
+
 module.exports = {
   generateRandomString,
   getUserByEmail,
   urlsForUser,
-  cookieInUse
+  cookieInUse,
+  isValidURL
 };

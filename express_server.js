@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
-const { generateRandomString, getUserByEmail, urlsForUser, cookieInUse } = require("./helper_functions");
+const { generateRandomString, getUserByEmail, urlsForUser, cookieInUse, isValidURL } = require("./helper_functions");
 
 app.use(cookieSession({
   name: 'session',
@@ -112,11 +112,16 @@ app.get("/urls.json", (req, res) => {
 app.post("/urls", (req, res) => {
   if (req.session.user_id) {
     const shortURL = generateRandomString();
-    urlDatabase[shortURL] = {
-      longURL: req.body.longURL,
-      userID: req.session.user_id
-    };
-    res.redirect(`/urls/${shortURL}`);
+    console.log(req.body.longURL)
+    if (isValidURL(req.body.longURL)) {
+      urlDatabase[shortURL] = {
+        longURL: req.body.longURL,
+        userID: req.session.user_id
+      };
+      res.redirect("/urls");
+    } else {
+      res.status(401).send("Invalid URL please try a different one (make sure to have 'http' or 'https' at the beginning)") 
+    }
   } else {
     res.status(401).send("Please login before creating shortURLs");
   }

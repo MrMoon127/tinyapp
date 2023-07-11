@@ -32,8 +32,20 @@ const urlsForUser = function(id, urlDatabase) {
   return toReturn;
 };
 
+const cookieInUse = function(user_id, userDatabase) {
+  for (const user in userDatabase) {
+    if (cookie === user) {
+      if (user_id === user) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 module.exports = {
   generateRandomString,
   getUserByEmail,
-  urlsForUser
+  urlsForUser,
+  cookieInUse
 };

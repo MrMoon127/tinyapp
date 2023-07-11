@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
-const { generateRandomString, getUserByEmail, urlsForUser } = require("./helper_functions");
+const { generateRandomString, getUserByEmail, urlsForUser, cookieInUse } = require("./helper_functions");
 
 app.use(cookieSession({
   name: 'session',
@@ -22,8 +22,8 @@ app.use(express.urlencoded({ extended: true}));
 
 // the basis, directs to a login page or users urls
 app.get("/", (req, res) => {
-  if (req.session.user_id) {
-    res.redirect("/urls");
+  if (cookieInUse(req.session.user_id, users)) {
+    res.redirect("/urls")
   } else {
     res.redirect("/login");
   }
@@ -41,7 +41,7 @@ app.get("/urls", (req, res) => {
 
 // page to create new urls
 app.get("/urls/new", (req, res) => {
-  if (!req.session.user_id) {
+  if (!cookieInUse(req.session.user_id)) {
     res.redirect("/login");
   } else {
     let templateVars = {
@@ -53,7 +53,7 @@ app.get("/urls/new", (req, res) => {
 
 // page to register a new email
 app.get("/register", (req, res) => {
-  if (req.session.user_id) {
+  if (cookieInUse(req.session.user_id, users)) {
     res.redirect("/urls");
   } else {
     let templateVars = {
@@ -65,7 +65,7 @@ app.get("/register", (req, res) => {
 
 // page to login
 app.get("/login", (req, res) => {
-  if (req.session.user_id) {
+  if (cookieInUse(req.session.user_id, users)) {
     res.redirect("/urls");
   } else {
     let templateVars = {
@@ -186,7 +186,7 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   const userID = getUserByEmail(email, users);
 
-  if (userID === null) {
+  if (userID === undefined) {
     res.status(403).send("This email is not registered with us, please register or enter a valid email");
   } else if (!bcrypt.compareSync(password, users[userID].password)) {
     res.status(403).send("The password you have entered is incorrect");
